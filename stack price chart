@@ -1,0 +1,30 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+file_path = "stocks.csv"  
+if not os.path.exists(file_path):
+    raise FileNotFoundError(f"{file_path} not found. Please place it in the script directory.")
+df = pd.read_csv(file_path)
+print("\n📄 First 5 rows:\n", df.head())
+print("\n🧾 Columns:", list(df.columns))
+df['Date'] = pd.to_datetime(df['Date'])
+df = df.sort_values('Date')
+def plot_stock_data(stock_df, title="Stock Price Chart"):
+    plt.figure(figsize=(12, 6))
+    plt.plot(stock_df['Date'], stock_df['Close'], label='Close', color='blue')
+    plt.plot(stock_df['Date'], stock_df['Close'].rolling(window=20).mean(), label='SMA 20', linestyle='--')
+    plt.plot(stock_df['Date'], stock_df['Close'].ewm(span=20, adjust=False).mean(), label='EMA 20', linestyle=':')
+    plt.title(title)
+    plt.xlabel('Date')
+    plt.ylabel('Closing Price')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+if 'Symbol' in df.columns:
+    for symbol in df['Symbol'].unique():
+        stock_df = df[df['Symbol'] == symbol]
+        plot_stock_data(stock_df, title=f"{symbol} Stock Price")
+else:
+    plot_stock_data(df)
+print("\n📈 Statistical Summary:\n", df.describe())
